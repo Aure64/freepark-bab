@@ -93,7 +93,7 @@ export default function App() {
     if (zonesState.status === 'error') showToast(zonesState.message);
   }, [zonesState, showToast]);
 
-  const handlePick = useCallback((hit: AddressHit) => {
+  const handlePick = useCallback((hit: AddressHit & { coords: [number, number] }) => {
     setDestination({ label: hit.label, coords: hit.coords });
     setSelectedId(null);
   }, []);

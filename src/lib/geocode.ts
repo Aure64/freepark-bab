@@ -9,12 +9,17 @@ export interface AddressHit {
   label: string;
   /** Contexte : rue, ville, type de lieu */
   city: string;
-  /** [lon, lat] */
-  coords: [number, number];
+  /** [lon, lat] — null pour un résultat Google à résoudre via resolveHit() */
+  coords: [number, number] | null;
   kind: 'address' | 'poi';
   /** Emoji d'illustration pour les POI */
   icon?: string;
+  /** Place ID Google (résolution des coordonnées à la sélection) */
+  placeId?: string;
 }
+
+/** Clé Google Places optionnelle : si présente, autocomplétion « comme Google Maps ». */
+const GOOGLE_KEY: string | undefined = import.meta.env.VITE_GOOGLE_PLACES_KEY;
 
 /** Centre approximatif du BAB pour biaiser les résultats. */
 const BAB_CENTER = { lat: 43.48, lon: -1.52 };
@@ -44,6 +49,13 @@ const POI_LABELS: Record<string, [string, string]> = {
   stadium: ['Stade', '🏟️'],
   golf_course: ['Golf', '⛳'],
   surf: ['Spot de surf', '🏄'],
+  games: ['Jeux', '🎲'],
+  toys: ['Jouets', '🧸'],
+  clothes: ['Vêtements', '👕'],
+  hairdresser: ['Coiffeur', '💈'],
+  bank: ['Banque', '🏦'],
+  fuel: ['Station-service', '⛽'],
+  charging_station: ['Borne de recharge', '🔌'],
 };
 
 function poiLabel(osmValue: string | undefined): [string, string] {
@@ -113,10 +125,60 @@ async function searchPhoton(query: string, signal?: AbortSignal): Promise<Addres
     );
 }
 
+/** Autocomplétion Google Places (New) — activée seulement si une clé est configurée. */
+async function searchGoogle(query: string, signal?: AbortSignal): Promise<AddressHit[]> {
+  const res = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': GOOGLE_KEY! },
+    body: JSON.stringify({
+      input: query,
+      languageCode: 'fr',
+      regionCode: 'FR',
+      locationBias: {
+        circle: { center: { latitude: 43.48, longitude: -1.52 }, radius: 30_000 },
+      },
+    }),
+  });
+  if (!res.ok) throw new Error(`Google HTTP ${res.status}`);
+  interface Prediction {
+    placeId: string;
+    text?: { text: string };
+    structuredFormat?: { mainText?: { text: string }; secondaryText?: { text: string } };
+  }
+  const data: { suggestions?: { placePrediction?: Prediction }[] } = await res.json();
+  return (data.suggestions ?? [])
+    .map((s) => s.placePrediction)
+    .filter((p): p is Prediction => Boolean(p))
+    .map((p) => ({
+      label: p.structuredFormat?.mainText?.text ?? p.text?.text ?? '',
+      city: p.structuredFormat?.secondaryText?.text ?? '',
+      coords: null,
+      kind: 'poi' as const,
+      icon: '📍',
+      placeId: p.placeId,
+    }));
+}
+
+/** Résout les coordonnées d'un hit (Place Details Google si nécessaire). */
+export async function resolveHit(hit: AddressHit): Promise<[number, number]> {
+  if (hit.coords) return hit.coords;
+  const res = await fetch(`https://places.googleapis.com/v1/places/${hit.placeId}`, {
+    headers: { 'X-Goog-Api-Key': GOOGLE_KEY!, 'X-Goog-FieldMask': 'location' },
+  });
+  if (!res.ok) throw new Error(`Google details HTTP ${res.status}`);
+  const data = await res.json();
+  return [data.location.longitude, data.location.latitude];
+}
+
 /** Recherche fusionnée : lieux nommés d'abord, adresses ensuite, max 6 résultats. */
 export async function searchAddress(query: string, signal?: AbortSignal): Promise<AddressHit[]> {
+  // Avec une clé Google : autocomplétion Google (POI + adresses monde entier),
+  // complétée par la BAN (gratuite) pour les adresses françaises.
   const [pois, addresses] = await Promise.all([
-    searchPhoton(query, signal).catch(() => [] as AddressHit[]),
+    GOOGLE_KEY
+      ? searchGoogle(query, signal).catch(() => [] as AddressHit[])
+      : searchPhoton(query, signal).catch(() => [] as AddressHit[]),
     searchBan(query, signal).catch(() => [] as AddressHit[]),
   ]);
   if (pois.length === 0 && addresses.length === 0)
@@ -128,7 +190,9 @@ export async function searchAddress(query: string, signal?: AbortSignal): Promis
     const dup = merged.some(
       (m) =>
         m.label.toLowerCase() === hit.label.toLowerCase() ||
-        (Math.abs(m.coords[0] - hit.coords[0]) < 0.0003 &&
+        (m.coords !== null &&
+          hit.coords !== null &&
+          Math.abs(m.coords[0] - hit.coords[0]) < 0.0003 &&
           Math.abs(m.coords[1] - hit.coords[1]) < 0.0003),
     );
     if (!dup) merged.push(hit);

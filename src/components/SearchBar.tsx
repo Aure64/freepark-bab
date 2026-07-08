@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { searchAddress, type AddressHit } from '../lib/geocode';
+import { resolveHit, searchAddress, type AddressHit } from '../lib/geocode';
 import type { Favorite } from '../lib/favorites';
 import './SearchBar.css';
 
 interface SearchBarProps {
   favorites: Favorite[];
-  onPick: (hit: AddressHit) => void;
+  /** Toujours appelé avec des coordonnées résolues */
+  onPick: (hit: AddressHit & { coords: [number, number] }) => void;
   onLocate: () => void;
   locating: boolean;
 }
@@ -47,10 +48,17 @@ export function SearchBar({ favorites, onPick, onLocate, locating }: SearchBarPr
     return () => document.removeEventListener('pointerdown', close);
   }, []);
 
-  const pick = (hit: AddressHit) => {
+  const pick = async (hit: AddressHit) => {
     setQuery(hit.label);
     setOpen(false);
-    onPick(hit);
+    try {
+      // Les résultats Google n'ont pas de coordonnées avant résolution du Place ID
+      const coords = await resolveHit(hit);
+      onPick({ ...hit, coords });
+    } catch {
+      setError('Lieu introuvable — réessayez.');
+      setOpen(true);
+    }
   };
 
   const showFavorites = open && query.trim().length < 3 && favorites.length > 0;
@@ -129,7 +137,7 @@ export function SearchBar({ favorites, onPick, onLocate, locating }: SearchBarPr
           {showHits &&
             hits.map((h) => (
               <button
-                key={`${h.label}${h.coords.join(',')}`}
+                key={`${h.label}${h.placeId ?? h.coords?.join(',') ?? ''}`}
                 className="search__row"
                 role="option"
                 aria-selected="false"
