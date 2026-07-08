@@ -1,10 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import '@fontsource-variable/bricolage-grotesque';
-import { MapView } from './components/MapView';
+import { MapView, type ParkingTap } from './components/MapView';
+import { NavChooser } from './components/NavChooser';
+import { ParkingCard } from './components/ParkingCard';
 import { SearchBar } from './components/SearchBar';
 import { SuggestionsSheet } from './components/SuggestionsSheet';
 import { TimeSelector } from './components/TimeSelector';
 import { loadFavorites, saveFavorites, type Favorite } from './lib/favorites';
+import { walkMeters, walkMinutes } from './lib/geo';
+import {
+  drivingUrl,
+  loadNavPref,
+  NAV_APPS,
+  saveNavPref,
+  type NavApp,
+} from './lib/navigation';
 import { buildSuggestions, destinationContext, DEFAULT_FILTERS } from './lib/suggest';
 import type { AddressHit } from './lib/geocode';
 import type { SuggestionFilters } from './lib/types';
@@ -25,6 +35,33 @@ export default function App() {
   const [favorites, setFavorites] = useState<Favorite[]>(loadFavorites);
   const [locating, setLocating] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [selectedParking, setSelectedParking] = useState<ParkingTap | null>(null);
+
+  // Navigation voiture : préférence d'app + spot en attente du premier choix.
+  // target null = on ne fait que (re)choisir l'app préférée, sans naviguer.
+  const [navPref, setNavPref] = useState<NavApp | null>(loadNavPref);
+  const [navChooser, setNavChooser] = useState<{
+    target: { name: string; coords: [number, number] } | null;
+  } | null>(null);
+
+  const navigateTo = useCallback(
+    (name: string, coords: [number, number]) => {
+      if (navPref) window.open(drivingUrl(navPref, coords), '_blank', 'noopener');
+      else setNavChooser({ target: { name, coords } });
+    },
+    [navPref],
+  );
+
+  const pickNavApp = useCallback(
+    (app: NavApp) => {
+      saveNavPref(app);
+      setNavPref(app);
+      if (navChooser?.target)
+        window.open(drivingUrl(app, navChooser.target.coords), '_blank', 'noopener');
+      setNavChooser(null);
+    },
+    [navChooser],
+  );
 
   // « Maintenant » vivant : re-tick chaque minute pour que les badges restent justes
   const [nowTick, setNowTick] = useState(() => new Date());
@@ -123,6 +160,7 @@ export default function App() {
         suggestions={suggestions}
         selectedId={selectedId}
         onSelect={setSelectedId}
+        onParkingTap={setSelectedParking}
       />
 
       <SearchBar
@@ -146,7 +184,29 @@ export default function App() {
         isFavorite={isFavorite}
         onToggleFavorite={toggleFavorite}
         computing={zonesState.status === 'loading' && destination !== null}
+        onNavigate={(s) => navigateTo(s.name, s.coords)}
+        navPrefLabel={NAV_APPS.find((a) => a.id === navPref)?.label ?? null}
+        onChangeNavPref={() => setNavChooser({ target: null })}
       />
+
+      {selectedParking && (
+        <ParkingCard
+          parking={selectedParking}
+          walkMinutes={
+            destination ? walkMinutes(walkMeters(destination.coords, selectedParking.coords)) : null
+          }
+          onNavigate={() => navigateTo(selectedParking.name, selectedParking.coords)}
+          onClose={() => setSelectedParking(null)}
+        />
+      )}
+
+      {navChooser && (
+        <NavChooser
+          targetName={navChooser.target?.name ?? null}
+          onPick={pickNavApp}
+          onClose={() => setNavChooser(null)}
+        />
+      )}
 
       {toast && (
         <div className="toast" role="alert">

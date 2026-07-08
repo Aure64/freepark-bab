@@ -1,0 +1,97 @@
+.parking-card {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(36dvh + 12px);
+  z-index: 35;
+  background: var(--surface-raised);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-float);
+  padding: 14px;
+  animation: card-in 0.28s var(--ease-out);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.parking-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.parking-card__icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--free);
+  color: oklch(0.99 0.005 85);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.parking-card__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.parking-card__title h3 {
+  margin: 0 0 3px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.parking-card__title p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+
+.parking-card__close {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--ink-faint);
+  display: grid;
+  place-items: center;
+}
+
+.parking-card__close:active {
+  background: var(--surface-sunken);
+}
+
+.parking-card__actions {
+  margin-top: 12px;
+}
+
+.parking-card__go {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--brand);
+  color: oklch(0.99 0.005 85);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.parking-card__go:active {
+  filter: brightness(0.9);
+}
+
+.parking-card__source {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: var(--ink-faint);
+}

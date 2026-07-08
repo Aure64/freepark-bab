@@ -9,6 +9,13 @@ const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 /** Vue initiale : centre du BAB */
 const INITIAL = { center: [-1.52, 43.48] as [number, number], zoom: 12 };
 
+export interface ParkingTap {
+  id: string;
+  name: string;
+  coords: [number, number];
+  capacity: string | null;
+}
+
 interface MapViewProps {
   zones: ZoneCollection | null;
   when: Date;
@@ -16,6 +23,7 @@ interface MapViewProps {
   suggestions: Suggestion[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onParkingTap: (parking: ParkingTap) => void;
   onMapReady?: (map: MLMap) => void;
 }
 
@@ -35,8 +43,11 @@ export function MapView({
   suggestions,
   selectedId,
   onSelect,
+  onParkingTap,
   onMapReady,
 }: MapViewProps) {
+  const onParkingTapRef = useRef(onParkingTap);
+  onParkingTapRef.current = onParkingTap;
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const loadedRef = useRef(false);
@@ -54,6 +65,8 @@ export function MapView({
       attributionControl: { compact: true },
     });
     mapRef.current = map;
+    // Poignée de debug/e2e (projection coordonnées → pixels dans les tests)
+    (window as { __freeparkMap?: MLMap }).__freeparkMap = map;
 
     // Suivi GPS continu façon Waze : point bleu + cap + recentrage, pensé conduite.
     // maximumAge 15 s = position quasi instantanée si l'OS en a une récente.
@@ -142,6 +155,24 @@ export function MapView({
           'circle-stroke-width': 1.5,
           'circle-opacity': 0.9,
         },
+      });
+
+      // Tap sur un parking gratuit → fiche détail
+      map.on('click', 'parkings', (e) => {
+        const f = e.features?.[0];
+        if (!f || f.geometry.type !== 'Point') return;
+        onParkingTapRef.current({
+          id: String(f.properties.id),
+          name: String(f.properties.name ?? 'Parking gratuit'),
+          coords: f.geometry.coordinates as [number, number],
+          capacity: f.properties.capacity != null ? String(f.properties.capacity) : null,
+        });
+      });
+      map.on('mouseenter', 'parkings', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'parkings', () => {
+        map.getCanvas().style.cursor = '';
       });
 
       applyStatuses(map, zones, when);
