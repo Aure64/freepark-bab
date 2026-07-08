@@ -7,6 +7,12 @@
   gap: 8px;
 }
 
+@media (min-width: 768px) {
+  .time {
+    left: 16px;
+  }
+}
+
 .time__chip {
   display: inline-flex;
   align-items: center;

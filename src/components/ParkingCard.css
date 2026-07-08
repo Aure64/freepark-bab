@@ -21,6 +21,24 @@
   }
 }
 
+/* Desktop : petite carte centrée en bas de la zone carte (le panneau occupe la gauche) */
+@media (min-width: 768px) {
+  .parking-card {
+    left: calc(50% + 212px);
+    right: auto;
+    bottom: 24px;
+    width: 400px;
+    transform: translateX(-50%);
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(10px);
+    }
+  }
+}
+
 .parking-card__icon {
   flex: none;
   width: 28px;

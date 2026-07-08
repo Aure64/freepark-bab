@@ -6,6 +6,20 @@
   align-items: flex-end;
 }
 
+/* Desktop : boîte de dialogue centrée plutôt que feuille collée en bas */
+@media (min-width: 768px) {
+  .navchooser {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navchooser__panel {
+    width: 400px;
+    border-radius: 20px;
+    padding: 24px;
+  }
+}
+
 .navchooser__backdrop {
   position: absolute;
   inset: 0;

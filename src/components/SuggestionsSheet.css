@@ -26,6 +26,39 @@
   max-height: 46dvh;
 }
 
+/* Desktop : la bottom sheet devient un panneau latéral gauche, façon Google Maps */
+@media (min-width: 768px) {
+  .sheet,
+  .sheet--peek,
+  .sheet--open {
+    left: 16px;
+    right: auto;
+    width: 408px;
+    top: calc(var(--safe-top) + 122px);
+    bottom: 16px;
+    height: auto;
+    border-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-float);
+  }
+
+  .sheet--welcome {
+    bottom: auto;
+    max-height: calc(100dvh - 140px);
+  }
+
+  .sheet__grip-zone {
+    display: none;
+  }
+
+  .sheet__content {
+    padding-top: 16px;
+  }
+
+  .sheet__welcome {
+    padding-top: 18px;
+  }
+}
+
 .sheet__grip-zone {
   flex: none;
   padding: 10px 0 6px;

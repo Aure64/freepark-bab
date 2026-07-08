@@ -6,6 +6,15 @@
   z-index: 20;
 }
 
+/* Desktop : colonne flottante à gauche, façon Google Maps */
+@media (min-width: 768px) {
+  .search {
+    left: 16px;
+    right: auto;
+    width: 408px;
+  }
+}
+
 .search__bar {
   display: flex;
   align-items: center;

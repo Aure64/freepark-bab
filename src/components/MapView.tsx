@@ -63,6 +63,14 @@ export function MapView({
       center: INITIAL.center,
       zoom: INITIAL.zoom,
       attributionControl: { compact: true },
+      // Perf : pas de fondu de tuiles, et on borne la carte au Pays basque
+      // (évite de charger des tuiles inutiles, limite le cache)
+      fadeDuration: 0,
+      minZoom: 9,
+      maxBounds: [
+        [-1.95, 43.2],
+        [-1.05, 43.75],
+      ],
     });
     mapRef.current = map;
     // Poignée de debug/e2e (projection coordonnées → pixels dans les tests)
@@ -77,6 +85,8 @@ export function MapView({
       showAccuracyCircle: true,
     });
     map.addControl(geolocate, 'bottom-right');
+    // Zoom +/- : utile à la souris, masqué en mobile via CSS
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 
     map.on('load', () => {
       loadedRef.current = true;
@@ -116,19 +126,33 @@ export function MapView({
         ['literal', ['paid', 'blue']],
       ] as maplibregl.ExpressionSpecification;
 
+      const isBlueKind = ['==', ['get', 'kind'], 'blue'] as maplibregl.ExpressionSpecification;
+
       map.addLayer({
         id: 'zones-fill',
         type: 'fill',
         source: 'zones',
         filter: regulatedFilter,
         paint: {
-          'fill-color': stateColor('#c94f38', '#4a7fc0', '#3d9970'),
+          // Zone bleue : toujours bleue (c'est un marquage physique), plus soutenue
+          // quand le disque s'applique. Payant : rouge actif, quasi neutre sinon.
+          'fill-color': [
+            'case',
+            isBlueKind,
+            '#4a7fc0',
+            stateColor('#c94f38', '#4a7fc0', '#3d9970'),
+          ] as maplibregl.ExpressionSpecification,
           'fill-opacity': [
-            'match',
-            ['coalesce', ['feature-state', 'state'], 'free'],
-            'free',
-            0.1,
-            0.28,
+            'case',
+            isBlueKind,
+            [
+              'match',
+              ['coalesce', ['feature-state', 'state'], 'free'],
+              'blue',
+              0.32,
+              0.15,
+            ],
+            ['match', ['coalesce', ['feature-state', 'state'], 'free'], 'free', 0.1, 0.28],
           ] as maplibregl.ExpressionSpecification,
         },
       });
@@ -138,7 +162,12 @@ export function MapView({
         source: 'zones',
         filter: regulatedFilter,
         paint: {
-          'line-color': stateColor('#b03a24', '#3a6ba8', '#2f8560'),
+          'line-color': [
+            'case',
+            isBlueKind,
+            '#3a6ba8',
+            stateColor('#b03a24', '#3a6ba8', '#2f8560'),
+          ] as maplibregl.ExpressionSpecification,
           'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.6, 16, 1.8],
           'line-opacity': 0.85,
         },
@@ -284,8 +313,12 @@ export function MapView({
     }
     const bounds = new maplibregl.LngLatBounds(destination, destination);
     suggestions.forEach((s) => bounds.extend(s.coords));
+    // Mobile : la bottom sheet couvre le bas ; desktop : le panneau couvre la gauche
+    const desktop = window.matchMedia('(min-width: 768px)').matches;
     map.fitBounds(bounds, {
-      padding: { top: 130, bottom: 320, left: 48, right: 48 },
+      padding: desktop
+        ? { top: 90, bottom: 90, left: 480, right: 80 }
+        : { top: 130, bottom: 320, left: 48, right: 48 },
       maxZoom: 16,
       duration: 700,
     });
