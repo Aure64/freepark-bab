@@ -379,8 +379,24 @@ const [biarritzPayant, biarritzBleue, anglet, bayonne, osmParkings, osmStreets] 
 
 const out = normalize({ biarritzPayant, biarritzBleue, anglet, bayonne, osmParkings, osmStreets });
 await nameParkings(out.features);
+
+// Découpage : zones critiques (peinture de la carte) d'un côté, points de rues de
+// l'autre au format compact [[nom, lon, lat], …] — ~90 % des features, chargées en
+// différé et reconstruites côté client (parse bien plus rapide sur mobile).
+const streets = out.features.filter((f) => f.properties.kind === 'street');
+const core = { ...out, features: out.features.filter((f) => f.properties.kind !== 'street') };
+const streetsCompact = streets.map((f) => [
+  f.properties.name,
+  f.geometry.coordinates[0],
+  f.geometry.coordinates[1],
+]);
+
 mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, JSON.stringify(out));
-const counts = out.features.reduce((acc, f) => ((acc[f.properties.kind] = (acc[f.properties.kind] ?? 0) + 1), acc), {});
+writeFileSync(OUT, JSON.stringify(core));
+const STREETS_OUT = join(dirname(OUT), 'streets.json');
+writeFileSync(STREETS_OUT, JSON.stringify(streetsCompact));
+const counts = core.features.reduce((acc, f) => ((acc[f.properties.kind] = (acc[f.properties.kind] ?? 0) + 1), acc), {});
 console.log(`\n→ ${OUT}`);
-console.log(`  ${out.features.length} zones :`, counts);
+console.log(`  ${core.features.length} zones :`, counts);
+console.log(`→ ${STREETS_OUT}`);
+console.log(`  ${streetsCompact.length} points de rues (format compact)`);

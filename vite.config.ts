@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   build: {
+    sourcemap: true,
     rolldownOptions: {
       output: {
         // MapLibre dans son propre chunk : téléchargement parallèle + il ne se
@@ -18,7 +19,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png', 'data/zones.geojson'],
+      includeAssets: [
+        'icons/icon.svg',
+        'icons/apple-touch-icon.png',
+        'data/zones.geojson',
+        'data/streets.json',
+      ],
       manifest: {
         name: 'FreePark BAB — stationnement gratuit',
         short_name: 'FreePark BAB',
@@ -36,7 +42,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2,geojson}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,geojson,json}'],
+        globIgnores: ['**/*.map'],
         // Tuiles de carte : cache au fil de l'eau, plafonné
         runtimeCaching: [
           {

@@ -175,18 +175,21 @@ export async function resolveHit(hit: AddressHit): Promise<[number, number]> {
 export async function searchAddress(query: string, signal?: AbortSignal): Promise<AddressHit[]> {
   // Avec une clé Google : autocomplétion Google (POI + adresses monde entier),
   // complétée par la BAN (gratuite) pour les adresses françaises.
+  // null = la source a échoué ; [] = elle a répondu « aucun résultat » (pas pareil !)
   const [pois, addresses] = await Promise.all([
     GOOGLE_KEY
-      ? searchGoogle(query, signal).catch(() => [] as AddressHit[])
-      : searchPhoton(query, signal).catch(() => [] as AddressHit[]),
-    searchBan(query, signal).catch(() => [] as AddressHit[]),
+      ? searchGoogle(query, signal).catch(() => null)
+      : searchPhoton(query, signal).catch(() => null),
+    searchBan(query, signal).catch(() => null),
   ]);
-  if (pois.length === 0 && addresses.length === 0)
-    throw new Error('Recherche indisponible');
+  // Une requête annulée (nouvelle frappe) ne doit pas s'afficher comme une panne
+  if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
+  // Panne seulement si LES DEUX sources ont échoué ; zéro résultat = liste vide
+  if (pois === null && addresses === null) throw new Error('Recherche indisponible');
 
   // Dédoublonne les quasi-doublons (même libellé ou < ~30 m)
   const merged: AddressHit[] = [];
-  for (const hit of [...pois, ...addresses]) {
+  for (const hit of [...(pois ?? []), ...(addresses ?? [])]) {
     const dup = merged.some(
       (m) =>
         m.label.toLowerCase() === hit.label.toLowerCase() ||

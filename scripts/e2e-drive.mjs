@@ -16,7 +16,7 @@ await page.screenshot({ path: `${OUT}/01-accueil.png` });
 
 // Recherche : resto au centre de Biarritz
 await page.fill('input[type="search"]', 'place clemenceau biarritz');
-await page.waitForTimeout(1600);
+await page.waitForSelector(".search__row", { timeout: 15000 });
 await page.screenshot({ path: `${OUT}/02-autocomplete.png` });
 const rows = page.locator('.search__row');
 console.log('autocomplete rows:', await rows.count());

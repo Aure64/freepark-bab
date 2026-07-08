@@ -3,8 +3,8 @@
 :root {
   /* Encre marine tintée (jamais de noir pur) */
   --ink: oklch(0.26 0.03 250);
-  --ink-soft: oklch(0.45 0.025 250);
-  --ink-faint: oklch(0.62 0.02 250);
+  --ink-soft: oklch(0.42 0.025 250);
+  --ink-faint: oklch(0.52 0.02 250);
 
   /* Surfaces ivoire chaud */
   --surface: oklch(0.985 0.006 85);
