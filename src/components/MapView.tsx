@@ -22,10 +22,15 @@ interface MapViewProps {
   destination: [number, number] | null;
   suggestions: Suggestion[];
   selectedId: string | null;
+  satellite: boolean;
   onSelect: (id: string) => void;
   onParkingTap: (parking: ParkingTap) => void;
   onMapReady?: (map: MLMap) => void;
 }
+
+/** Imagerie satellite Esri World Imagery (gratuite avec attribution). */
+const SATELLITE_TILES =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
 /** Applique l'état horaire de chaque zone en feature-state (pilote les couleurs). */
 function applyStatuses(map: MLMap, zones: ZoneCollection, when: Date) {
@@ -42,6 +47,7 @@ export function MapView({
   destination,
   suggestions,
   selectedId,
+  satellite,
   onSelect,
   onParkingTap,
   onMapReady,
@@ -255,6 +261,36 @@ export function MapView({
     else map.once('load', setup);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zones]);
+
+  // Fond satellite : couche raster insérée SOUS les zones, visibilité togglée
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const apply = () => {
+      if (!map.getSource('satellite')) {
+        map.addSource('satellite', {
+          type: 'raster',
+          tiles: [SATELLITE_TILES],
+          tileSize: 256,
+          maxzoom: 19,
+          attribution: 'Imagerie © Esri',
+        });
+        const beforeId = map.getLayer('zones-fill') ? 'zones-fill' : undefined;
+        map.addLayer(
+          {
+            id: 'satellite',
+            type: 'raster',
+            source: 'satellite',
+            layout: { visibility: 'none' },
+          },
+          beforeId,
+        );
+      }
+      map.setLayoutProperty('satellite', 'visibility', satellite ? 'visible' : 'none');
+    };
+    if (loadedRef.current) apply();
+    else map.once('load', apply);
+  }, [satellite]);
 
   // Recalcule les couleurs quand le moment choisi change
   useEffect(() => {

@@ -53,6 +53,34 @@
   font-weight: 800;
 }
 
+.parking-card__photo {
+  flex: none;
+  width: 56px;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: block;
+  background: var(--surface-sunken);
+}
+
+.parking-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.parking-card__photo--loading {
+  animation: shimmer 1.3s linear infinite;
+  background: linear-gradient(
+    100deg,
+    var(--surface-sunken) 40%,
+    oklch(0.97 0.006 85) 50%,
+    var(--surface-sunken) 60%
+  );
+  background-size: 200% 100%;
+}
+
 .parking-card__text {
   flex: 1;
   min-width: 0;

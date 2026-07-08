@@ -36,6 +36,7 @@ export default function App() {
   const [locating, setLocating] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [selectedParking, setSelectedParking] = useState<ParkingTap | null>(null);
+  const [satellite, setSatellite] = useState(false);
 
   // Navigation voiture : préférence d'app + spot en attente du premier choix.
   // target null = on ne fait que (re)choisir l'app préférée, sans naviguer.
@@ -159,9 +160,29 @@ export default function App() {
         destination={destination?.coords ?? null}
         suggestions={suggestions}
         selectedId={selectedId}
+        satellite={satellite}
         onSelect={setSelectedId}
         onParkingTap={setSelectedParking}
       />
+
+      <button
+        className={`style-toggle${satellite ? ' style-toggle--sat' : ''}`}
+        onClick={() => setSatellite((v) => !v)}
+        aria-pressed={satellite}
+        aria-label={satellite ? 'Passer en plan' : 'Passer en satellite'}
+        title={satellite ? 'Plan' : 'Satellite'}
+      >
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path
+            d="M2.5 6.5 10 3l7.5 3.5L10 10 2.5 6.5ZM2.5 10.5 10 14l7.5-3.5M2.5 14.5 10 18l7.5-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span>{satellite ? 'Plan' : 'Satellite'}</span>
+      </button>
 
       <SearchBar
         favorites={favorites}
