@@ -7,6 +7,8 @@ import './SuggestionsSheet.css';
 interface SuggestionsSheetProps {
   destinationLabel: string | null;
   destinationStatus: ZoneStatus | null;
+  /** true si l'adresse n'est pas DANS une zone mais à moins de 150 m d'une zone réglementée */
+  destinationNearby: boolean;
   suggestions: Suggestion[];
   filters: SuggestionFilters;
   onFiltersChange: (f: SuggestionFilters) => void;
@@ -36,6 +38,7 @@ const WALK_ICON = (
 export function SuggestionsSheet({
   destinationLabel,
   destinationStatus,
+  destinationNearby,
   suggestions,
   filters,
   onFiltersChange,
@@ -100,6 +103,7 @@ export function SuggestionsSheet({
               <h2>{destinationLabel}</h2>
               {destinationStatus && (
                 <p className="sheet__dest-status">
+                  {destinationNearby && <span className="sheet__dest-prefix">Rues autour :</span>}
                   <Badge state={destinationStatus.state}>{destinationStatus.label}</Badge>
                   {destinationStatus.sublabel && <span>{destinationStatus.sublabel}</span>}
                 </p>
@@ -148,6 +152,24 @@ export function SuggestionsSheet({
               Éviter zones bleues
             </button>
           </div>
+
+          {destinationStatus?.state === 'free' && !computing && (
+            <div className="sheet__parkhere">
+              <span className="sheet__parkhere-icon" aria-hidden="true">✓</span>
+              <div>
+                <p className="sheet__parkhere-title">Garez-vous sur place, c’est gratuit</p>
+                <p className="sheet__parkhere-sub">
+                  {destinationStatus.sublabel === 'gratuit en permanence'
+                    ? 'Les rues autour ne sont pas payantes.'
+                    : `Attention : ${destinationStatus.sublabel}.`}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {suggestions.length > 0 && destinationStatus?.state === 'free' && !computing && (
+            <p className="sheet__list-title">Sinon, à proximité</p>
+          )}
 
           {computing ? (
             <div className="sheet__skeletons" aria-label="Calcul en cours">

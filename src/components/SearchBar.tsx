@@ -91,11 +91,13 @@ export function SearchBar({ favorites, onPick, onLocate, locating }: SearchBarPr
           title="Ma position"
         >
           <svg viewBox="0 0 20 20" aria-hidden="true">
+            <circle cx="10" cy="10" r="5.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+            <circle cx="10" cy="10" r="1.8" fill="currentColor" />
             <path
-              d="M10 2v2.1A6 6 0 0 1 15.9 10H18v0-0M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"
-              fill="none"
+              d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3"
               stroke="currentColor"
               strokeWidth="1.8"
+              strokeLinecap="round"
             />
           </svg>
         </button>

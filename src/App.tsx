@@ -36,9 +36,9 @@ export default function App() {
 
   const zones = zonesState.status === 'ready' ? zonesState.zones : null;
 
-  const destStatus = useMemo(() => {
+  const destContext = useMemo(() => {
     if (!zones || !destination) return null;
-    return destinationContext(destination.coords, zones, effectiveWhen)?.status ?? null;
+    return destinationContext(destination.coords, zones, effectiveWhen);
   }, [zones, destination, effectiveWhen]);
 
   const suggestions = useMemo(() => {
@@ -135,7 +135,8 @@ export default function App() {
 
       <SuggestionsSheet
         destinationLabel={destination?.label ?? null}
-        destinationStatus={destStatus}
+        destinationStatus={destContext?.status ?? null}
+        destinationNearby={destContext?.nearby ?? false}
         suggestions={suggestions}
         filters={filters}
         onFiltersChange={setFilters}

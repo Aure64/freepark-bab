@@ -44,17 +44,47 @@ function pointInZone(
   return booleanPointInPolygon(point(coords), zone as GeoJSON.Feature<GeoJSON.Polygon>, opts);
 }
 
-/** La destination est-elle dans une zone réglementée active ? */
+/** Distance min (m) entre un point et les sommets des anneaux d'une zone. */
+function distanceToZone(coords: [number, number], zone: ZoneFeature): number {
+  let min = Infinity;
+  for (const ring of outerRings(zone)) {
+    for (const vertex of ring) {
+      const d = haversineMeters(coords, vertex as [number, number]);
+      if (d < min) min = d;
+    }
+  }
+  return min;
+}
+
+/** Au-delà de cette distance, l'adresse est considérée hors contexte réglementé (m). */
+const NEARBY_ZONE_RADIUS_M = 150;
+
+/**
+ * Contexte réglementaire de la destination.
+ * Les polygones open data épousent les rues : une adresse (bâtiment, place) tombe
+ * souvent ENTRE les polygones — d'où le fallback « zone la plus proche » qui permet
+ * de garder l'avertissement « payant à partir de 9h » au cœur d'un quartier payant.
+ */
 export function destinationContext(
   dest: [number, number],
   zones: ZoneCollection,
   when: Date,
-): { zone: ZoneFeature; status: ZoneStatus } | null {
-  for (const zone of zones.features as ZoneFeature[]) {
-    if (zone.properties.kind === 'free-parking' || !isPolygonal(zone)) continue;
-    if (!pointInZone(dest, zone)) continue;
-    return { zone, status: zoneStatusAt(zone, when) };
+): { zone: ZoneFeature; status: ZoneStatus; nearby: boolean } | null {
+  const regulated = (zones.features as ZoneFeature[]).filter(
+    (z) => z.properties.kind !== 'free-parking' && isPolygonal(z),
+  );
+
+  for (const zone of regulated) {
+    if (pointInZone(dest, zone)) return { zone, status: zoneStatusAt(zone, when), nearby: false };
   }
+
+  let closest: { zone: ZoneFeature; d: number } | null = null;
+  for (const zone of regulated) {
+    const d = distanceToZone(dest, zone);
+    if (d <= NEARBY_ZONE_RADIUS_M && (!closest || d < closest.d)) closest = { zone, d };
+  }
+  if (closest)
+    return { zone: closest.zone, status: zoneStatusAt(closest.zone, when), nearby: true };
   return null;
 }
 
@@ -174,7 +204,7 @@ export function buildSuggestions(
               )
             : makeSuggestion(
                 `${zone.properties.id}-edge`,
-                `Rue gratuite en bord de ${zone.properties.name.toLowerCase()}`,
+                `Rue gratuite · limite zone ${zone.properties.zoneColor.toLowerCase()}`,
                 zone.properties.commune,
                 best.coords,
                 dest,
