@@ -22,7 +22,7 @@ interface MapViewProps {
 /** Applique l'état horaire de chaque zone en feature-state (pilote les couleurs). */
 function applyStatuses(map: MLMap, zones: ZoneCollection, when: Date) {
   for (const f of zones.features as ZoneFeature[]) {
-    if (f.properties.kind === 'free-parking') continue;
+    if (f.properties.kind !== 'paid' && f.properties.kind !== 'blue') continue;
     const status = zoneStatusAt(f, when);
     map.setFeatureState({ source: 'zones', id: f.properties.id }, { state: status.state });
   }
@@ -97,11 +97,17 @@ export function MapView({
           free,
         ] as maplibregl.ExpressionSpecification;
 
+      const regulatedFilter = [
+        'in',
+        ['get', 'kind'],
+        ['literal', ['paid', 'blue']],
+      ] as maplibregl.ExpressionSpecification;
+
       map.addLayer({
         id: 'zones-fill',
         type: 'fill',
         source: 'zones',
-        filter: ['!=', ['get', 'kind'], 'free-parking'],
+        filter: regulatedFilter,
         paint: {
           'fill-color': stateColor('#c94f38', '#4a7fc0', '#3d9970'),
           'fill-opacity': [
@@ -117,7 +123,7 @@ export function MapView({
         id: 'zones-line',
         type: 'line',
         source: 'zones',
-        filter: ['!=', ['get', 'kind'], 'free-parking'],
+        filter: regulatedFilter,
         paint: {
           'line-color': stateColor('#b03a24', '#3a6ba8', '#2f8560'),
           'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.6, 16, 1.8],

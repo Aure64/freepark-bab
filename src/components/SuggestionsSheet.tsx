@@ -1,5 +1,11 @@
 import { useRef, useState } from 'react';
-import { walkingDirectionsUrl } from '../lib/directions';
+import {
+  drivingUrl,
+  loadNavPref,
+  NAV_APPS,
+  saveNavPref,
+  type NavApp,
+} from '../lib/navigation';
 import type { Suggestion, SuggestionFilters, ZoneStatus } from '../lib/types';
 import { Badge } from './Badge';
 import './SuggestionsSheet.css';
@@ -50,6 +56,21 @@ export function SuggestionsSheet({
 }: SuggestionsSheetProps) {
   const [position, setPosition] = useState<SheetPosition>('peek');
   const dragStart = useRef<{ y: number; position: SheetPosition } | null>(null);
+  const [navPref, setNavPref] = useState<NavApp | null>(loadNavPref);
+  /** Suggestion en attente du choix d'app de navigation (null = choix de préférence seul) */
+  const [chooser, setChooser] = useState<{ target: Suggestion | null } | null>(null);
+
+  const navigateTo = (s: Suggestion) => {
+    if (navPref) window.open(drivingUrl(navPref, s.coords), '_blank', 'noopener');
+    else setChooser({ target: s });
+  };
+
+  const pickNavApp = (app: NavApp) => {
+    saveNavPref(app);
+    setNavPref(app);
+    if (chooser?.target) window.open(drivingUrl(app, chooser.target.coords), '_blank', 'noopener');
+    setChooser(null);
+  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     dragStart.current = { y: e.clientY, position };
@@ -206,16 +227,16 @@ export function SuggestionsSheet({
                         {WALK_ICON}
                         {s.walkMinutes} min
                       </span>
-                      <a
+                      <button
                         className="row__go"
-                        href={walkingDirectionsUrl(s.coords)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={`Itinéraire à pied vers ${s.name}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateTo(s);
+                        }}
+                        aria-label={`Itinéraire voiture vers ${s.name}`}
                       >
                         Y aller
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </li>
@@ -224,9 +245,35 @@ export function SuggestionsSheet({
           )}
 
           <p className="sheet__disclaimer">
+            {navPref && (
+              <>
+                Navigation : {NAV_APPS.find((a) => a.id === navPref)?.label}{' '}
+                <button className="sheet__navchange" onClick={() => setChooser({ target: null })}>
+                  changer
+                </button>
+                {' · '}
+              </>
+            )}
             Données : open data Biarritz · Anglet · Bayonne · OpenStreetMap. Vérifiez toujours la
             signalisation sur place.
           </p>
+        </div>
+      )}
+
+      {chooser && (
+        <div className="navchooser" role="dialog" aria-label="Choisir l’app de navigation">
+          <div className="navchooser__backdrop" onClick={() => setChooser(null)} />
+          <div className="navchooser__panel">
+            <p className="navchooser__title">
+              {chooser.target ? `Itinéraire voiture vers ${chooser.target.name}` : 'App de navigation'}
+            </p>
+            {NAV_APPS.map((app) => (
+              <button key={app.id} className="navchooser__app" onClick={() => pickNavApp(app.id)}>
+                {app.label}
+              </button>
+            ))}
+            <p className="navchooser__note">Votre choix est mémorisé — modifiable en bas de page.</p>
+          </div>
         </div>
       )}
     </section>

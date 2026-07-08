@@ -93,9 +93,10 @@ function describeStart(start: Date, ref: Date): string {
 
 /** Statut d'une zone à l'instant `date`, avec libellés prêts pour les badges. */
 export function zoneStatusAt(zone: ZoneFeature, date: Date): ZoneStatus {
-  const { kind, schedule } = zone.properties;
+  const { kind } = zone.properties;
+  const schedule = zone.properties.schedule ?? [];
 
-  if (kind === 'free-parking' || schedule.length === 0) {
+  if (kind === 'free-parking' || kind === 'street' || schedule.length === 0) {
     return {
       state: 'free',
       activeUntil: null,

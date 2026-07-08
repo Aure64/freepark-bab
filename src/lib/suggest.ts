@@ -157,21 +157,64 @@ export function buildSuggestions(
       makeSuggestion(
         f.properties.id,
         f.properties.name,
-        f.properties.commune,
+        f.properties.commune ?? '',
         coords,
         dest,
         zoneStatusAt(f, when),
         'parking',
-        f.properties.tariffNote,
+        f.properties.tariffNote ?? '',
       ),
     );
   }
 
-  // 2. + 3. Bords de zones réglementées actives
+  // 2. Rues stationnables (points OSM nommés) hors zone réglementée active.
+  // Une rue DANS une zone inactive au moment choisi hérite du statut de la zone
+  // (→ « Gratuit maintenant · payant demain à 9h »).
+  const regulatedPolygons = features.filter(
+    (f) => (f.properties.kind === 'paid' || f.properties.kind === 'blue') && isPolygonal(f),
+  );
+  let nearbyStreetCount = 0;
+  for (const f of features) {
+    if (f.properties.kind !== 'street' || f.geometry.type !== 'Point') continue;
+    const coords = f.geometry.coordinates as [number, number];
+    if (haversineMeters(dest, coords) > SEARCH_RADIUS_M) continue;
+    const container = regulatedPolygons.find((z) =>
+      pointInZone(coords, z, { ignoreBoundary: true }),
+    );
+    const status = container
+      ? zoneStatusAt(container, when)
+      : ({
+          state: 'free',
+          activeUntil: null,
+          nextActiveStart: null,
+          label: 'Gratuit',
+          sublabel: 'rue non réglementée',
+        } as ZoneStatus);
+    if (status.state !== 'free') continue;
+    nearbyStreetCount++;
+    candidates.push(
+      makeSuggestion(
+        f.properties.id,
+        f.properties.name,
+        container?.properties.commune ?? '',
+        coords,
+        dest,
+        status,
+        'street',
+        container?.properties.tariffNote ?? 'Vérifiez la signalisation sur place.',
+      ),
+    );
+  }
+
+  // 3. Bords de zones réglementées actives — secours si peu de rues OSM dans le coin,
+  //    + zones bleues (on se gare DEDANS avec disque, donc toujours proposées)
   for (const zone of activePolygons) {
     const status = zoneStatusAt(zone, when);
     const isBlue = status.state === 'blue';
     if (isBlue && filters.avoidBlue) continue;
+    // Les rues nommées couvrent déjà les abords des zones payantes : les sommets de
+    // polygones ne servent que là où OSM est pauvre
+    if (!isBlue && nearbyStreetCount >= 2) continue;
 
     for (const ring of outerRings(zone)) {
       // Échantillonne ~1 sommet sur N pour rester sous ~40 points par anneau
@@ -196,17 +239,17 @@ export function buildSuggestions(
             ? makeSuggestion(
                 `${zone.properties.id}-blue-edge`,
                 `${zone.properties.name} (disque)`,
-                zone.properties.commune,
+                zone.properties.commune ?? '',
                 best.coords,
                 dest,
                 status,
                 'blue-zone',
-                zone.properties.tariffNote,
+                zone.properties.tariffNote ?? '',
               )
             : makeSuggestion(
                 `${zone.properties.id}-edge`,
-                `Rue gratuite · limite zone ${zone.properties.zoneColor.toLowerCase()}`,
-                zone.properties.commune,
+                `Rue gratuite · limite zone ${(zone.properties.zoneColor ?? '').toLowerCase()}`,
+                zone.properties.commune ?? '',
                 best.coords,
                 dest,
                 {

@@ -133,6 +133,42 @@ describe('buildSuggestions', () => {
     expect(buildSuggestions(DEST, zones, DAYTIME)).toHaveLength(1);
   });
 
+  const street = (id: string, name: string, coords: [number, number]): ZoneFeature => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: coords },
+    properties: { id, name, kind: 'street' },
+  });
+
+  it('une rue DANS la zone payante est exclue en journée, proposée le soir avec avertissement', () => {
+    const zones = collection([paidSquare('A'), street('s1', 'Rue Gambetta', [0.001, 0.001])]);
+    const day = buildSuggestions(DEST, zones, DAYTIME);
+    expect(day.some((s) => s.name === 'Rue Gambetta')).toBe(false);
+    const evening = buildSuggestions(DEST, zones, EVENING);
+    const rue = evening.find((s) => s.name === 'Rue Gambetta');
+    expect(rue).toBeDefined();
+    expect(rue!.status.state).toBe('free');
+    expect(rue!.status.sublabel).toContain('demain à 9h');
+  });
+
+  it('une rue HORS zone est proposée en journée comme non réglementée', () => {
+    const zones = collection([paidSquare('A', ALWAYS_PAID), street('s2', 'Rue du Large', [0.005, 0])]);
+    const day = buildSuggestions(DEST, zones, DAYTIME);
+    const rue = day.find((s) => s.name === 'Rue du Large');
+    expect(rue).toBeDefined();
+    expect(rue!.status.sublabel).toBe('rue non réglementée');
+  });
+
+  it('avec ≥ 2 rues nommées, les points « limite de zone » s’effacent', () => {
+    const zones = collection([
+      paidSquare('A', ALWAYS_PAID),
+      street('s3', 'Rue A', [0.005, 0]),
+      street('s4', 'Rue B', [0, 0.005]),
+    ]);
+    const suggestions = buildSuggestions(DEST, zones, DAYTIME);
+    expect(suggestions.some((s) => s.kind === 'street-edge')).toBe(false);
+    expect(suggestions.filter((s) => s.kind === 'street')).toHaveLength(2);
+  });
+
   it('zone bleue proposée avec badge, exclue avec avoidBlue', () => {
     const blue: ZoneFeature = {
       ...paidSquare('B'),

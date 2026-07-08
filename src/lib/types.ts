@@ -10,17 +10,18 @@ export interface ScheduleRule {
   end: string;
 }
 
-export type ZoneKind = 'paid' | 'blue' | 'free-parking';
+export type ZoneKind = 'paid' | 'blue' | 'free-parking' | 'street';
 
 export interface ZoneProperties {
   id: string;
-  commune: string;
   name: string;
   kind: ZoneKind;
-  zoneColor: string;
-  schedule: ScheduleRule[];
-  tariffNote: string;
-  source: string;
+  /** Absents sur les points « street » (propriétés minimales pour alléger le fichier) */
+  commune?: string;
+  zoneColor?: string;
+  schedule?: ScheduleRule[];
+  tariffNote?: string;
+  source?: string;
   capacity?: string | null;
 }
 
@@ -42,7 +43,7 @@ export interface ZoneStatus {
   sublabel: string;
 }
 
-export type SuggestionKind = 'parking' | 'street-edge' | 'blue-zone';
+export type SuggestionKind = 'parking' | 'street' | 'street-edge' | 'blue-zone';
 
 export interface Suggestion {
   id: string;
