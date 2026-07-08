@@ -1,0 +1,72 @@
+.map-view {
+  position: absolute;
+  inset: 0;
+}
+
+/* La carte sous la sheet : on masque le logo maplibre par-dessus rien d'important */
+.map-view .maplibregl-ctrl-bottom-right {
+  bottom: calc(34dvh + 8px);
+}
+
+/* Marqueur destination : épingle rouge basque */
+.dest-marker {
+  position: relative;
+  width: 30px;
+  height: 40px;
+  filter: drop-shadow(0 3px 5px oklch(0.26 0.03 250 / 0.35));
+}
+
+.dest-marker__pin {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 30px;
+  height: 30px;
+  background: var(--brand);
+  border: 2.5px solid oklch(0.99 0.005 85);
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
+
+.dest-marker__dot {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: oklch(0.99 0.005 85);
+}
+
+/* Marqueurs de suggestions numérotés */
+.sugg-marker {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(0.99 0.005 85);
+  border: 2.5px solid oklch(0.99 0.005 85);
+  box-shadow: 0 2px 6px oklch(0.26 0.03 250 / 0.3);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.sugg-marker--free {
+  background: var(--free);
+}
+
+.sugg-marker--blue {
+  background: var(--blue);
+}
+
+.sugg-marker--paid {
+  background: var(--paid);
+}
+
+.sugg-marker--selected {
+  transform: scale(1.35);
+  z-index: 2;
+}

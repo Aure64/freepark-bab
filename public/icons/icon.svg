@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fond encre marine, P blanc, point vert « gratuit » -->
+  <rect width="512" height="512" rx="116" fill="#232936"/>
+  <text x="196" y="352" font-family="Arial Black, Arial, sans-serif" font-size="300" font-weight="900" fill="#faf9f5" text-anchor="middle">P</text>
+  <circle cx="360" cy="150" r="58" fill="#2f8560"/>
+  <path d="M334 150l18 18 34-36" fill="none" stroke="#faf9f5" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

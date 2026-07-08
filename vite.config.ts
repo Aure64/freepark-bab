@@ -1,7 +1,48 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-})
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png', 'data/zones.geojson'],
+      manifest: {
+        name: 'FreePark BAB — stationnement gratuit',
+        short_name: 'FreePark BAB',
+        description:
+          "Le stationnement gratuit à Biarritz, Anglet et Bayonne, selon l'heure où vous y allez.",
+        lang: 'fr',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#faf9f5',
+        theme_color: '#faf9f5',
+        icons: [
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,geojson}'],
+        // Tuiles de carte : cache au fil de l'eau, plafonné
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/tiles\.openfreemap\.org\/.*/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'map-tiles',
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/api-adresse\.data\.gouv\.fr\/.*/,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'geocoding', networkTimeoutSeconds: 4 },
+          },
+        ],
+      },
+    }),
+  ],
+});
