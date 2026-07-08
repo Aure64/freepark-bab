@@ -50,7 +50,7 @@ if (px) {
 console.log('fiche parking ouverte:', cardVisible);
 if (cardVisible) {
   console.log('titre:', await page.locator('.parking-card h3').textContent());
-  console.log('détail:', await page.locator('.parking-card__title p').textContent());
+  console.log('détail:', await page.locator('.parking-card__text p').textContent());
   await page.screenshot({ path: `${OUT}/07-fiche-parking.png` });
   await page.locator('.parking-card__go').click();
   await page.waitForTimeout(600);

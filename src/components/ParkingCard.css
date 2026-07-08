@@ -4,85 +4,68 @@
   right: 12px;
   bottom: calc(36dvh + 12px);
   z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: var(--surface-raised);
   border-radius: var(--radius-control);
   box-shadow: var(--shadow-float);
-  padding: 14px;
-  animation: card-in 0.28s var(--ease-out);
+  padding: 10px 10px 10px 12px;
+  animation: card-in 0.25s var(--ease-out);
 }
 
 @keyframes card-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
-}
-
-.parking-card__head {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
 }
 
 .parking-card__icon {
   flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: var(--free);
   color: oklch(0.99 0.005 85);
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
 }
 
-.parking-card__title {
+.parking-card__text {
   flex: 1;
   min-width: 0;
 }
 
-.parking-card__title h3 {
-  margin: 0 0 3px;
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.parking-card__title p {
+.parking-card__text h3 {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.parking-card__text p {
+  margin: 1px 0 0;
+  font-size: 12px;
   color: var(--ink-soft);
-  line-height: 1.4;
-}
-
-.parking-card__close {
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  color: var(--ink-faint);
-  display: grid;
-  place-items: center;
-}
-
-.parking-card__close:active {
-  background: var(--surface-sunken);
-}
-
-.parking-card__actions {
-  margin-top: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .parking-card__go {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
+  flex: none;
+  padding: 8px 13px;
+  border-radius: 10px;
   background: var(--brand);
   color: oklch(0.99 0.005 85);
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
 }
 
@@ -90,8 +73,17 @@
   filter: brightness(0.9);
 }
 
-.parking-card__source {
-  margin: 10px 0 0;
-  font-size: 11px;
+.parking-card__close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   color: var(--ink-faint);
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+}
+
+.parking-card__close:active {
+  background: var(--surface-sunken);
 }

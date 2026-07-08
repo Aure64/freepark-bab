@@ -143,17 +143,61 @@ export function MapView({
           'line-opacity': 0.85,
         },
       });
+      // Badge « P » dessiné en canvas : lisible et clairement tapable
+      if (!map.hasImage('parking-badge')) {
+        const size = 56;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const c = canvas.getContext('2d')!;
+        c.beginPath();
+        c.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
+        c.fillStyle = '#2f8560';
+        c.fill();
+        c.lineWidth = 5;
+        c.strokeStyle = '#faf9f5';
+        c.stroke();
+        c.fillStyle = '#faf9f5';
+        c.font = `800 ${size * 0.54}px system-ui, sans-serif`;
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.fillText('P', size / 2, size / 2 + 2);
+        map.addImage('parking-badge', c.getImageData(0, 0, size, size), { pixelRatio: 2 });
+      }
       map.addLayer({
         id: 'parkings',
-        type: 'circle',
+        type: 'symbol',
         source: 'zones',
         filter: ['==', ['get', 'kind'], 'free-parking'],
+        layout: {
+          'icon-image': 'parking-badge',
+          'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.45, 14, 0.7, 17, 1],
+          'icon-allow-overlap': true,
+        },
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 15, 6, 17, 9],
-          'circle-color': '#2f8560',
-          'circle-stroke-color': '#f7f5ef',
-          'circle-stroke-width': 1.5,
-          'circle-opacity': 0.9,
+          'icon-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.75, 14, 1],
+        },
+      });
+
+      // Petite bulle avec le nombre de places (capacité OSM) à côté du badge P
+      map.addLayer({
+        id: 'parkings-capacity',
+        type: 'symbol',
+        source: 'zones',
+        minzoom: 14,
+        filter: ['all', ['==', ['get', 'kind'], 'free-parking'], ['has', 'capacity']],
+        layout: {
+          'text-field': ['to-string', ['get', 'capacity']],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 14, 10, 17, 12.5],
+          'text-anchor': 'bottom-left',
+          'text-offset': [0.7, -0.5],
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': '#1f5c44',
+          'text-halo-color': '#faf9f5',
+          'text-halo-width': 2,
         },
       });
 
