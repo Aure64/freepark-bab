@@ -115,7 +115,7 @@ export function SearchBar({ favorites, onPick, onLocate, locating }: SearchBarPr
                   className="search__row"
                   role="option"
                   aria-selected="false"
-                  onClick={() => pick({ label: f.address, city: '', coords: f.coords })}
+                  onClick={() => pick({ label: f.address, city: '', coords: f.coords, kind: 'address' })}
                 >
                   <span className="search__row-star" aria-hidden="true">★</span>
                   <span>
@@ -135,7 +135,11 @@ export function SearchBar({ favorites, onPick, onLocate, locating }: SearchBarPr
                 aria-selected="false"
                 onClick={() => pick(h)}
               >
-                <span className="search__row-pin" aria-hidden="true" />
+                {h.kind === 'poi' ? (
+                  <span className="search__row-poi" aria-hidden="true">{h.icon ?? '📍'}</span>
+                ) : (
+                  <span className="search__row-pin" aria-hidden="true" />
+                )}
                 <span>
                   <strong>{h.label}</strong>
                   {h.city && <small>{h.city}</small>}

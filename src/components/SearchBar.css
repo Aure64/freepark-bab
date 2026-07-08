@@ -157,6 +157,14 @@
   font-size: 16px;
 }
 
+.search__row-poi {
+  flex: none;
+  width: 16px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
 .search__row-pin {
   width: 8px;
   height: 8px;
