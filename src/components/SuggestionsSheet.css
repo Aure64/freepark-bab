@@ -141,6 +141,14 @@
   color: var(--ink-faint);
 }
 
+.sheet__about-link {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--brand);
+  text-decoration: underline;
+  text-align: left;
+}
+
 /* ---- Contenu résultats ---- */
 
 .sheet__content {

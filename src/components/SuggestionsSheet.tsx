@@ -21,6 +21,7 @@ interface SuggestionsSheetProps {
   /** Libellé de l'app de navigation mémorisée, null si aucun choix encore */
   navPrefLabel: string | null;
   onChangeNavPref: () => void;
+  onOpenAbout: () => void;
 }
 
 type SheetPosition = 'peek' | 'open';
@@ -54,6 +55,7 @@ export function SuggestionsSheet({
   onNavigate,
   navPrefLabel,
   onChangeNavPref,
+  onOpenAbout,
 }: SuggestionsSheetProps) {
   const [position, setPosition] = useState<SheetPosition>('peek');
   const dragStart = useRef<{ y: number; position: SheetPosition } | null>(null);
@@ -102,6 +104,9 @@ export function SuggestionsSheet({
             <li><i className="dot dot--free" /> Parking gratuit</li>
           </ul>
           <p className="sheet__hint">Cherchez une adresse pour voir où vous garer gratuitement.</p>
+          <button className="sheet__about-link" onClick={onOpenAbout}>
+            À propos · Signaler une erreur · Partager
+          </button>
         </div>
       ) : (
         <div className="sheet__content">
@@ -241,7 +246,10 @@ export function SuggestionsSheet({
               </>
             )}
             Données : open data Biarritz · Anglet · Bayonne · OpenStreetMap. Vérifiez toujours la
-            signalisation sur place.
+            signalisation sur place.{' '}
+            <button className="sheet__navchange" onClick={onOpenAbout}>
+              À propos · Signaler une erreur
+            </button>
           </p>
         </div>
       )}

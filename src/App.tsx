@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import '@fontsource-variable/bricolage-grotesque';
+import { AboutPanel } from './components/AboutPanel';
 import { MapView, type ParkingTap } from './components/MapView';
 import { NavChooser } from './components/NavChooser';
 import { ParkingCard } from './components/ParkingCard';
@@ -37,6 +38,7 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [selectedParking, setSelectedParking] = useState<ParkingTap | null>(null);
   const [satellite, setSatellite] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   // Navigation voiture : préférence d'app + spot en attente du premier choix.
   // target null = on ne fait que (re)choisir l'app préférée, sans naviguer.
@@ -208,7 +210,19 @@ export default function App() {
         onNavigate={(s) => navigateTo(s.name, s.coords)}
         navPrefLabel={NAV_APPS.find((a) => a.id === navPref)?.label ?? null}
         onChangeNavPref={() => setNavChooser({ target: null })}
+        onOpenAbout={() => setAboutOpen(true)}
       />
+
+      {aboutOpen && (
+        <AboutPanel
+          reportContext={
+            destination
+              ? `destination « ${destination.label} », moment ${effectiveWhen.toLocaleString('fr-FR')}`
+              : 'écran d’accueil'
+          }
+          onClose={() => setAboutOpen(false)}
+        />
+      )}
 
       {selectedParking && (
         <ParkingCard

@@ -1,0 +1,134 @@
+.about {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.about__backdrop {
+  position: absolute;
+  inset: 0;
+  background: oklch(0.26 0.03 250 / 0.4);
+  animation: fade-in 0.2s var(--ease-out);
+}
+
+.about__panel {
+  position: relative;
+  width: 100%;
+  max-height: 85dvh;
+  overflow-y: auto;
+  background: var(--surface-raised);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  padding: 22px 22px calc(24px + var(--safe-bottom));
+  box-shadow: var(--shadow-sheet);
+  animation: chooser-in 0.3s var(--ease-out);
+}
+
+@media (min-width: 768px) {
+  .about {
+    align-items: center;
+  }
+
+  .about__panel {
+    width: 520px;
+    max-height: 80dvh;
+    border-radius: 20px;
+  }
+}
+
+.about__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.about__head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.about__head h2 span {
+  color: var(--brand);
+}
+
+.about__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--ink-faint);
+  display: grid;
+  place-items: center;
+}
+
+.about__close:active {
+  background: var(--surface-sunken);
+}
+
+.about__pitch {
+  margin: 0 0 16px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.about__actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.about__action {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border-radius: var(--radius-control);
+  background: var(--surface-sunken);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink);
+  text-align: center;
+}
+
+.about__action--primary {
+  background: var(--brand);
+  color: oklch(0.99 0.005 85);
+}
+
+.about__panel h3 {
+  margin: 18px 0 6px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+.about__panel p,
+.about__panel ul {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.about__panel ul {
+  padding-left: 18px;
+}
+
+.about__panel a {
+  color: var(--brand);
+}
+
+.about__code {
+  margin-top: 16px;
+  font-size: 12.5px;
+}

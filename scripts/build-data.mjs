@@ -322,6 +322,52 @@ function normalize({ biarritzPayant, biarritzBleue, anglet, bayonne, osmParkings
   return { type: 'FeatureCollection', features };
 }
 
+/**
+ * Nomme les parkings anonymes par leur rue via le géocodage inverse EN LOT de la BAN
+ * (une seule requête CSV pour tous) : « Parking gratuit » → « Parking · Avenue de Verdun ».
+ */
+async function nameParkings(features) {
+  const anonymous = features.filter(
+    (f) => f.properties.kind === 'free-parking' && f.properties.name === 'Parking gratuit',
+  );
+  if (anonymous.length === 0 || OFFLINE) return;
+  const csv =
+    'lon,lat\n' +
+    anonymous.map((f) => f.geometry.coordinates.join(',')).join('\n');
+  try {
+    const form = new FormData();
+    form.append('data', new Blob([csv], { type: 'text/csv' }), 'parkings.csv');
+    form.append('columns', 'lon');
+    form.append('columns', 'lat');
+    const res = await fetch('https://api-adresse.data.gouv.fr/reverse/csv/', {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(120_000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const lines = (await res.text()).split('\n');
+    const header = lines[0].split(',');
+    const iStreet = header.indexOf('result_street');
+    const iName = header.indexOf('result_name');
+    const iCity = header.indexOf('result_city');
+    let named = 0;
+    // Les lignes sont renvoyées dans l'ordre d'envoi
+    anonymous.forEach((f, i) => {
+      const cols = lines[i + 1]?.split(',');
+      if (!cols) return;
+      const street = cols[iStreet] || cols[iName];
+      if (street) {
+        f.properties.name = `Parking · ${street}`;
+        named++;
+      }
+      if (cols[iCity]) f.properties.commune = cols[iCity];
+    });
+    console.log(`✓ BAN reverse : ${named}/${anonymous.length} parkings nommés par leur rue`);
+  } catch (err) {
+    console.warn(`⚠ BAN reverse : ${err.message} (les parkings gardent leur nom générique)`);
+  }
+}
+
 const [biarritzPayant, biarritzBleue, anglet, bayonne, osmParkings, osmStreets] = await Promise.all([
   loadSource('biarritz_payant', SOURCES.biarritz_payant),
   loadSource('biarritz_bleue', SOURCES.biarritz_bleue),
@@ -332,6 +378,7 @@ const [biarritzPayant, biarritzBleue, anglet, bayonne, osmParkings, osmStreets] 
 ]);
 
 const out = normalize({ biarritzPayant, biarritzBleue, anglet, bayonne, osmParkings, osmStreets });
+await nameParkings(out.features);
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(out));
 const counts = out.features.reduce((acc, f) => ((acc[f.properties.kind] = (acc[f.properties.kind] ?? 0) + 1), acc), {});
