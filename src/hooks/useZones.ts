@@ -12,11 +12,15 @@ export function useZones(): ZonesState {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${import.meta.env.BASE_URL}data/zones.geojson`)
-      .then((res) => {
+    // index.html lance le fetch dès le parsing du HTML ; on le récupère si présent
+    const preloaded = (window as { __zonesPromise?: Promise<ZoneCollection> }).__zonesPromise;
+    (
+      preloaded ??
+      fetch(`${import.meta.env.BASE_URL}data/zones.geojson`).then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
+    )
       .then((zones: ZoneCollection) => {
         if (!cancelled) setState({ status: 'ready', zones });
       })

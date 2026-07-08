@@ -1,4 +1,5 @@
-import { booleanPointInPolygon, point } from '@turf/turf';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import { point } from '@turf/helpers';
 import { zoneStatusAt } from './schedule';
 import { haversineMeters, walkMeters, walkMinutes } from './geo';
 import type {

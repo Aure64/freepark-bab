@@ -3,9 +3,21 @@
   inset: 0;
 }
 
-/* La carte sous la sheet : on masque le logo maplibre par-dessus rien d'important */
+/* Les contrôles bas restent au-dessus de la bottom sheet */
 .map-view .maplibregl-ctrl-bottom-right {
   bottom: calc(34dvh + 8px);
+}
+
+/* Bouton de suivi GPS : gros doigt, conduite */
+.map-view .maplibregl-ctrl-group {
+  border-radius: 14px;
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+}
+
+.map-view .maplibregl-ctrl-group button {
+  width: 46px;
+  height: 46px;
 }
 
 /* Marqueur destination : épingle rouge basque */

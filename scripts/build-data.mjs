@@ -93,7 +93,18 @@ async function loadOsmParkings() {
   return [];
 }
 
-const feature = (geometry, props) => ({ type: 'Feature', geometry, properties: props });
+/** Arrondit les coordonnées à 6 décimales (~11 cm) — les sources en ont 10. */
+function roundCoords(value) {
+  if (typeof value === 'number') return Math.round(value * 1e6) / 1e6;
+  if (Array.isArray(value)) return value.map(roundCoords);
+  return value;
+}
+
+const feature = (geometry, props) => ({
+  type: 'Feature',
+  geometry: { ...geometry, coordinates: roundCoords(geometry.coordinates) },
+  properties: props,
+});
 
 function normalize({ biarritzPayant, biarritzBleue, anglet, bayonne, osmParkings }) {
   const features = [];

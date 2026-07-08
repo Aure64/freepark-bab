@@ -54,6 +54,17 @@ export function MapView({
       attributionControl: { compact: true },
     });
     mapRef.current = map;
+
+    // Suivi GPS continu façon Waze : point bleu + cap + recentrage, pensé conduite.
+    // maximumAge 15 s = position quasi instantanée si l'OS en a une récente.
+    const geolocate = new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true, maximumAge: 15_000, timeout: 10_000 },
+      trackUserLocation: true,
+      showUserLocation: true,
+      showAccuracyCircle: true,
+    });
+    map.addControl(geolocate, 'bottom-right');
+
     map.on('load', () => {
       loadedRef.current = true;
       onMapReady?.(map);

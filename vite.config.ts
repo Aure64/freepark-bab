@@ -3,6 +3,17 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  build: {
+    rolldownOptions: {
+      output: {
+        // MapLibre dans son propre chunk : téléchargement parallèle + il ne se
+        // re-télécharge pas quand seul le code applicatif change
+        advancedChunks: {
+          groups: [{ name: 'maplibre', test: /node_modules[\\/]maplibre-gl/ }],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

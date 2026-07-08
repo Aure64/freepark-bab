@@ -79,7 +79,8 @@ export default function App() {
         setLocating(false);
         showToast('Position refusée ou introuvable — cherchez une adresse.');
       },
-      { enableHighAccuracy: true, timeout: 10_000 },
+      // maximumAge : réutilise une position récente de l'OS → réponse quasi immédiate en voiture
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 15_000 },
     );
   }, [showToast]);
 
