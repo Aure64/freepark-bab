@@ -4,6 +4,12 @@
   overflow: hidden;
 }
 
+/* Coquille statique d'index.html : masquée inline, révélée seulement une fois
+   ce fichier CSS chargé (sinon flash non stylé en dev où le CSS arrive par JS) */
+#shell {
+  display: block !important;
+}
+
 /* Fond neutre pendant le chargement différé de MapLibre */
 .map-placeholder {
   position: absolute;

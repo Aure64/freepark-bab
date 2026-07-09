@@ -39,7 +39,65 @@
     <title>FreePark BAB — stationnement gratuit à Biarritz, Anglet, Bayonne</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Coquille statique : copie du premier rendu de App (écran d'accueil) pour
+        peindre l'interface dès l'arrivée du HTML, avant tout JavaScript.
+        React la remplace au montage (createRoot().render() vide le conteneur).
+        display:none + règle #shell dans App.css : visible seulement une fois le
+        CSS chargé (en dev le CSS arrive par JS → pas de flash non stylé).
+        Si le premier rendu de App change, mettre cette copie à jour.
+      -->
+      <div class="app" id="shell" style="display: none">
+        <div class="map-placeholder" aria-hidden="true"></div>
+        <button class="style-toggle" aria-pressed="false" title="Satellite">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M2.5 6.5 10 3l7.5 3.5L10 10 2.5 6.5ZM2.5 10.5 10 14l7.5-3.5M2.5 14.5 10 18l7.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+          </svg>
+          <span>Satellite</span>
+        </button>
+        <div class="search">
+          <div class="search__bar">
+            <svg class="search__icon" viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="2" />
+              <line x1="13.5" y1="13.5" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <input type="search" inputmode="search" placeholder="Où allez-vous ?" aria-label="Adresse de destination" />
+            <button class="search__locate" aria-label="Utiliser ma position" title="Ma position">
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="10" cy="10" r="5.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+                <circle cx="10" cy="10" r="1.8" fill="currentColor" />
+                <path d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="time" role="group" aria-label="Moment du stationnement">
+          <button class="time__chip time__chip--active">Maintenant</button>
+          <button class="time__chip">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6" />
+              <path d="M8 4.8V8l2.2 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+            Choisir un moment
+          </button>
+        </div>
+        <section class="sheet sheet--peek sheet--welcome" aria-label="Suggestions de stationnement">
+          <div class="sheet__grip-zone"><div class="sheet__grip" aria-hidden="true"></div></div>
+          <div class="sheet__welcome">
+            <h1 class="sheet__brand">FreePark <span>BAB</span></h1>
+            <p class="sheet__tagline">Le stationnement gratuit à Biarritz, Anglet et Bayonne — selon l’heure où vous y allez.</p>
+            <ul class="sheet__legend">
+              <li><i class="dot dot--paid"></i> Payant au moment choisi</li>
+              <li><i class="dot dot--blue"></i> Zone bleue (disque)</li>
+              <li><i class="dot dot--free"></i> Parking gratuit</li>
+            </ul>
+            <p class="sheet__hint">Cherchez une adresse pour voir où vous garer gratuitement.</p>
+            <button class="sheet__about-link">À propos · Signaler une erreur · Partager</button>
+          </div>
+        </section>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
