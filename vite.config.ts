@@ -19,6 +19,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // defer : l'enregistrement du service worker ne bloque plus le premier rendu
+      injectRegister: 'script-defer',
       includeAssets: [
         'icons/icon.svg',
         'icons/apple-touch-icon.png',
