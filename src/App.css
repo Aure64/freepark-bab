@@ -4,6 +4,13 @@
   overflow: hidden;
 }
 
+/* Fond neutre pendant le chargement différé de MapLibre */
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  background: oklch(0.95 0.008 85);
+}
+
 /* Bascule Plan / Satellite */
 .style-toggle {
   position: absolute;

@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import '@fontsource-variable/bricolage-grotesque';
 import { AboutPanel } from './components/AboutPanel';
-import { MapView, type ParkingTap } from './components/MapView';
+import type { ParkingTap } from './components/MapView';
+
+// La carte (MapLibre, ~1 Mo de JS) se charge en différé : l'interface s'affiche
+// immédiatement, la carte apparaît une fraction de seconde après.
+const MapView = lazy(() => import('./components/MapView').then((m) => ({ default: m.MapView })));
 import { NavChooser } from './components/NavChooser';
 import { ParkingCard } from './components/ParkingCard';
 import { SearchBar } from './components/SearchBar';
@@ -156,6 +160,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <Suspense fallback={<div className="map-placeholder" aria-hidden="true" />}>
       <MapView
         zones={zones}
         when={effectiveWhen}
@@ -166,6 +171,7 @@ export default function App() {
         onSelect={setSelectedId}
         onParkingTap={setSelectedParking}
       />
+      </Suspense>
 
       <button
         className={`style-toggle${satellite ? ' style-toggle--sat' : ''}`}

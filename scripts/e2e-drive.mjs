@@ -1,6 +1,6 @@
 import { chromium, devices } from 'playwright';
 
-const OUT = '/tmp/claude-1000/-home-aurelien-geoloc-places-gratuites/838dd34d-3509-4419-903b-75b8e442835d/scratchpad';
+const OUT = '/tmp/claude-1000/-home-aurelien-free-park-bab/0feb3940-4df5-4f01-9bef-32c2b370e0e7/scratchpad';
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ ...devices['iPhone 13'], locale: 'fr-FR' });
 const page = await ctx.newPage();
